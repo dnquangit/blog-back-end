@@ -1,0 +1,60 @@
+package uploadprovider
+
+import (
+	"bytes"
+	"context"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/streaming"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"go-module/component"
+)
+
+type azureProvider struct {
+	Key             string
+	AccountName     string
+	Container       string
+	Url             string
+	ContainerClient *azblob.ContainerClient
+}
+
+func NewAzureProvider(key string, accountName string, container string, url string) (*azureProvider, error) {
+
+	credential, err := azblob.NewSharedKeyCredential(accountName, key)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceClient, err := azblob.NewServiceClientWithSharedKey(url, credential, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	containerClient, _ := serviceClient.NewContainerClient(container)
+	if err != nil {
+		return nil, err
+	}
+
+	return &azureProvider{
+		Key:             key,
+		AccountName:     accountName,
+		Url:             url,
+		Container:       container,
+		ContainerClient: containerClient,
+	}, nil
+}
+
+func (provider *azureProvider) UploadFile(ctx context.Context, fileName string, fileData []byte) error {
+	if provider.ContainerClient == nil {
+		return component.NewAppError("Cannot connect to azure provider", component.ErrInternal.String(), "The container client is nil")
+	}
+
+	blobClient, _ := provider.ContainerClient.NewBlockBlobClient(fileName)
+
+	blockBlobUploadOptions := azblob.BlockBlobUploadOptions{}
+
+	_, err := blobClient.Upload(ctx, streaming.NopCloser(bytes.NewReader(fileData)), &blockBlobUploadOptions)
+	if err != nil {
+		return component.NewAppError("Cannot upload file to azure provider", component.ErrInternal.String(), err.Error())
+	}
+
+	return nil
+}
