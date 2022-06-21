@@ -29,11 +29,13 @@ func Recover(context *component.AppContext) gin.HandlerFunc {
 
 func writeAppError(c *gin.Context, err *component.AppError) {
 	switch typeMessage := err.Type; typeMessage {
-	case component.ErrorInvalidPayload.String(), component.ErrorInvalidAuth.String(), component.ErrorEntityExists.String():
+	case component.ErrorInvalidPayload.String(), component.ErrorEntityExists.String():
 		c.AbortWithStatusJSON(http.StatusBadRequest, common.NewBadRequestResponse(err))
 	case component.ErrorEntityNotFound.String():
 		c.AbortWithStatusJSON(http.StatusNotFound, common.NewNotFoundResponse(err))
 	case component.ErrNoPermission.String():
 		c.AbortWithStatusJSON(http.StatusForbidden, common.NewForbiddenResponse(err))
+	case component.ErrorInvalidAuth.String():
+		c.AbortWithStatusJSON(http.StatusUnauthorized, common.NewUnAuthorizedResponse(err))
 	}
 }

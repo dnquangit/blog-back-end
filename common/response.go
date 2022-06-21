@@ -36,3 +36,7 @@ func NewInternalErrorResponse(err error) *response {
 func NewForbiddenResponse(appError *component.AppError) *response {
 	return &response{Data: nil, Message: appError.Message, Reason: appError.Reason, StatusCode: http.StatusForbidden, Status: "fail"}
 }
+
+func NewUnAuthorizedResponse(appError *component.AppError) *response {
+	return &response{Data: nil, Message: appError.Message, Reason: appError.Reason, StatusCode: http.StatusUnauthorized, Status: "fail"}
+}

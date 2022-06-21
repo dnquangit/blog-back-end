@@ -74,10 +74,10 @@ func runGinService(gormDB *gorm.DB, provider component.UploadFileProvider) error
 	router.GET("/api/v1/post/find", ginpost.ListPost(ctx))
 	router.GET("/api/v1/post/find/:id", ginpost.GetPost(ctx))
 	router.POST("/api/v1/post", middleware.RequiredAuth(ctx, "ADMIN"), ginpost.CreatePost(ctx))
-	router.PUT("/api/v1/post/:id", ginpost.UpdatePost(ctx))
+	router.PUT("/api/v1/post/:id", middleware.RequiredAuth(ctx, "ADMIN"), ginpost.UpdatePost(ctx))
 	router.DELETE("/api/v1/post/:id", middleware.RequiredAuth(ctx, "ADMIN"), ginpost.DeletePost(ctx))
 
-	router.POST("/api/v1/upload", ginupload.UploadFile(ctx))
+	router.POST("/api/v1/upload", middleware.RequiredAuth(ctx, "ADMIN"), ginupload.UploadFile(ctx))
 	return router.Run(":" + os.Getenv("SERVER_PORT"))
 }
 

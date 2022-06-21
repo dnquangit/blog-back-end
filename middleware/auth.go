@@ -15,7 +15,7 @@ func RequiredAuth(ctx *component.AppContext, role string) gin.HandlerFunc {
 		claims := common.GetClaims(c)
 
 		if claims["role"] != role || !isValidUser(claims, c.Request.Context(), ctx) {
-			panic(component.NewAppError("user isn't allowed", component.ErrNoPermission.String(), ""))
+			panic(component.NewAppError("user isn't authorized", component.ErrorInvalidAuth.String(), ""))
 		}
 
 		c.Next()
