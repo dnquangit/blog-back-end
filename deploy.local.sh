@@ -16,9 +16,6 @@ docker rm -f ${APP_NAME}
 echo "Docker run container ..."
 docker run -d --name ${APP_NAME} \
   --network=fd-network \
-  -e VIRTUAL_HOST="demo2.bangthong.one" \
-  -e LETSENCRYPT_HOST="demo2.bangthong.one" \
-  -e LETSENCRYPT_EMAIL="dnquangit@gmail.com" \
   -e ENV=DOCKER \
   -p 10000:10000 \
   ${APP_NAME}
