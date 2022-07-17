@@ -2,7 +2,7 @@
 
 APP_NAME=food-delivery-g04
 PLATFORM=linux/arm64
-DOCKER_FILE=./Dockerfile.local
+DOCKER_FILE=./Dockerfile.production
 
 echo "Delete old image ..."
 docker rmi -f ${APP_NAME}
