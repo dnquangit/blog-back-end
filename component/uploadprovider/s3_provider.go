@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"go-module/component"
+	"log"
 )
 
 type s3Provider struct {
@@ -20,6 +21,9 @@ type s3Provider struct {
 }
 
 func NewS3Provider(bucket string, key string, secret string, region string, url string) (*s3Provider, error) {
+	log.Printf("bucket: %s - key : %s- secret : %s- region : %s- url : %s \n",
+		bucket, key, secret, region, url)
+
 	s3Session, err := session.NewSession(&aws.Config{
 		Region: &region,
 		Credentials: credentials.NewStaticCredentials(
@@ -29,6 +33,8 @@ func NewS3Provider(bucket string, key string, secret string, region string, url 
 	})
 
 	if err != nil {
+		log.Println("error")
+		log.Println(err.Error())
 		return nil, err
 	}
 

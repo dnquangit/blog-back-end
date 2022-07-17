@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"go-module/component"
 	gormpgstore "go-module/component/datastore/gorm/postgresql"
 	"go-module/component/uploadprovider"
@@ -19,15 +18,21 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(".env"); err != nil {
-		panic(err)
-	}
+	component.LoadEnv()
 
 	gormDB, err := gormpgstore.NewDB(os.Getenv("DB_CONNECTION_STRING"))
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
+	log.Println("connect db success xx")
+	log.Println("bucket")
+	log.Println(os.Getenv("S3_BUCKET"))
+	log.Println("key")
+	log.Println(os.Getenv("S3_KEY"))
+
+	log.Printf("bucket: %s - key : %s- secret : %s- region : %s- url : %s \n",
+		os.Getenv("S3_BUCKET"), os.Getenv("S3_KEY"), os.Getenv("S3_SECRET"), os.Getenv("S3_REGION"), os.Getenv("S3_URL"))
 	uploadProvider, err :=
 		uploadprovider.NewS3Provider(
 			os.Getenv("S3_BUCKET"),
@@ -37,9 +42,10 @@ func main() {
 			os.Getenv("S3_URL"))
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
+	log.Println("connect aws success")
 	runGinService(gormDB, uploadProvider)
 }
 
@@ -53,12 +59,17 @@ func runGinService(gormDB *gorm.DB, provider component.UploadFileProvider) error
 	})
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:4200"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+		AllowAllOrigins:        true,
+		AllowOriginFunc:        nil,
+		AllowMethods:           []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		AllowHeaders:           []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials:       true,
+		ExposeHeaders:          []string{"Content-Length"},
+		MaxAge:                 12 * time.Hour,
+		AllowWildcard:          false,
+		AllowBrowserExtensions: false,
+		AllowWebSockets:        false,
+		AllowFiles:             false,
 	}))
 	router.Use(middleware.Recover(ctx))
 
@@ -79,20 +90,4 @@ func runGinService(gormDB *gorm.DB, provider component.UploadFileProvider) error
 
 	router.POST("/api/v1/upload", middleware.RequiredAuth(ctx, "ADMIN"), ginupload.UploadFile(ctx))
 	return router.Run(":" + os.Getenv("SERVER_PORT"))
-}
-
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Headers", "*")
-		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
 }
