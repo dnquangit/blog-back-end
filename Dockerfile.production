@@ -6,7 +6,7 @@ ARG PORT=10000
 
 ENV GO111MODULE=on
 
-WORKDIR /server
+WORKDIR /blog-server
 
 COPY go.mod ./
 COPY go.sum ./

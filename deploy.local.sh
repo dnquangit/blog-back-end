@@ -1,8 +1,10 @@
 #!/bin/sh
 
-APP_NAME=food-delivery-g04
+APP_NAME=blog-server
 PLATFORM=linux/amd64
 DOCKER_FILE=./Dockerfile.local
+DOCKER_SERVER_PORT=10000
+LOCAL_SERVER_PORT=10000
 
 echo "Delete old image ..."
 docker rmi -f ${APP_NAME}
@@ -17,5 +19,5 @@ echo "Docker run container ..."
 docker run -d --name ${APP_NAME} \
   --network=fd-network \
   -e ENV=DOCKER \
-  -p 10000:10000 \
+  -p ${LOCAL_SERVER_PORT}:${DOCKER_SERVER_PORT} \
   ${APP_NAME}
